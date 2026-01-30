@@ -50,21 +50,31 @@ class NewGoalWizard(ctk.CTkToplevel):
         self._build_ui()
         self.transient(parent)
         self.grab_set()
+        self._parent = parent
+
+    def _safe_destroy(self) -> None:
+        try:
+            if self.winfo_exists():
+                self.destroy()
+        except Exception:
+            pass
 
     def _build_ui(self) -> None:
         # Top nav: back + title
         nav = ctk.CTkFrame(self, fg_color="transparent", height=48)
         nav.pack(fill="x", padx=16, pady=(12, 0))
         nav.pack_propagate(False)
-        ctk.CTkButton(
+        self._btn_back = ctk.CTkButton(
             nav,
-            text="←",
-            width=40,
+            text="← Back",
+            width=80,
             height=40,
             fg_color="transparent",
             hover_color=BG_CARD,
+            font=FONT_SMALL,
             command=self._go_back,
-        ).pack(side="left", padx=(0, 8))
+        )
+        self._btn_back.pack(side="left", padx=(0, 8))
         ctk.CTkLabel(nav, text="New Goal", font=FONT_HEADING, text_color=TEXT_PRIMARY).pack(side="left")
 
         # Progress bar: 3 segments
@@ -126,15 +136,16 @@ class NewGoalWizard(ctk.CTkToplevel):
             btn.pack(side="left", padx=4)
             self._color_buttons.append((c, btn))
 
-        ctk.CTkButton(
+        self._btn_save = ctk.CTkButton(
             form,
-            text="Save",
+            text="Save →",
             font=FONT_BODY,
             fg_color=ACCENT_MINT_LIGHT,
             text_color="#121D2D",
             corner_radius=CORNER_RADIUS,
             command=self._save,
-        ).pack(fill="x", pady=(8, 0))
+        )
+        self._btn_save.pack(fill="x", pady=(8, 0))
 
     def _pick_color(self, color: str) -> None:
         self._selected_color = color
@@ -144,7 +155,8 @@ class NewGoalWizard(ctk.CTkToplevel):
     def _go_back(self) -> None:
         if self._on_back:
             self._on_back()
-        self.destroy()
+        self.withdraw()
+        self.after(200, self._safe_destroy)
 
     def _save(self) -> None:
         title = self._title_entry.get().strip()
@@ -153,4 +165,5 @@ class NewGoalWizard(ctk.CTkToplevel):
         desc = self._desc_entry.get().strip()
         if self._on_save:
             self._on_save(title, desc, self._selected_color)
-        self.destroy()
+        self.withdraw()
+        self.after(200, self._safe_destroy)
