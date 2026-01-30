@@ -148,8 +148,11 @@ class HomeDashboardView(ctk.CTkScrollableFrame):
 
     def _build_quick_action(self, parent: ctk.CTkButton, icon: str, title: str, subtitle: str) -> None:
         # Custom content inside button: icon (dark circle), title (bold), subtitle (grey)
-        inner = ctk.CTkFrame(parent, fg_color="transparent")
+        # Use a single inner frame so clicks anywhere trigger the button's command
+        cmd = parent.cget("command") or (lambda: None)
+        inner = ctk.CTkFrame(parent, fg_color="transparent", cursor="hand2")
         inner.place(relx=0.03, rely=0.1, relwidth=0.94, relheight=0.8)
+        inner.bind("<Button-1>", lambda e: cmd())
         icon_lbl = ctk.CTkLabel(
             inner,
             text=icon,
@@ -158,12 +161,19 @@ class HomeDashboardView(ctk.CTkScrollableFrame):
             fg_color=BG_DARK,
             corner_radius=18,
             font=FONT_BODY,
+            cursor="hand2",
         )
         icon_lbl.pack(side="left", padx=(0, 12))
-        texts = ctk.CTkFrame(inner, fg_color="transparent")
+        icon_lbl.bind("<Button-1>", lambda e: cmd())
+        texts = ctk.CTkFrame(inner, fg_color="transparent", cursor="hand2")
         texts.pack(side="left", fill="x", expand=True)
-        ctk.CTkLabel(texts, text=title, font=FONT_HEADING, text_color=TEXT_PRIMARY, anchor="w").pack(fill="x")
-        ctk.CTkLabel(texts, text=subtitle, font=FONT_SMALL, text_color=TEXT_MUTED, anchor="w").pack(fill="x")
+        texts.bind("<Button-1>", lambda e: cmd())
+        t1 = ctk.CTkLabel(texts, text=title, font=FONT_HEADING, text_color=TEXT_PRIMARY, anchor="w", cursor="hand2")
+        t1.pack(fill="x")
+        t1.bind("<Button-1>", lambda e: cmd())
+        t2 = ctk.CTkLabel(texts, text=subtitle, font=FONT_SMALL, text_color=TEXT_MUTED, anchor="w", cursor="hand2")
+        t2.pack(fill="x")
+        t2.bind("<Button-1>", lambda e: cmd())
 
     def _make_kpi_card(
         self,
