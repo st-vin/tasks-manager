@@ -32,17 +32,39 @@ class TasksView(ctk.CTkFrame):
         self,
         master: ctk.CTk,
         on_new_task: Optional[Callable[[], None]] = None,
+        on_back: Optional[Callable[[], None]] = None,
         get_presenter=None,
         **kwargs,
     ) -> None:
         super().__init__(master, fg_color=BG_DARK, **kwargs)
         self._on_new_task = on_new_task or (lambda: None)
+        self._on_back = on_back or (lambda: None)
         self._get_presenter = get_presenter
         self._selected_date = date.today()
         self._day_buttons: list = []
         self._build_ui()
 
     def _build_ui(self) -> None:
+        # Header: back arrow + title, reserve space for bottom nav
+        header = ctk.CTkFrame(self, fg_color="transparent", height=48)
+        header.pack(fill="x", padx=16, pady=(12, 0))
+        header.pack_propagate(False)
+        ctk.CTkButton(
+            header,
+            text="← Back",
+            width=80,
+            height=40,
+            fg_color="transparent",
+            hover_color=BG_CARD,
+            font=FONT_SMALL,
+            command=self._on_back,
+        ).pack(side="left", padx=(0, 8))
+        ctk.CTkLabel(
+            header,
+            text="Tasks",
+            font=FONT_HEADING,
+            text_color=TEXT_PRIMARY,
+        ).pack(side="left")
         # Date strip: horizontal day pills
         strip = ctk.CTkScrollableFrame(self, fg_color="transparent", orientation="horizontal")
         strip.pack(fill="x", padx=16, pady=(12, 8))
