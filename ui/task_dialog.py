@@ -27,6 +27,14 @@ class TaskDialog(ctk.CTkToplevel):
         self._build_ui()
         self.transient(parent)
         self.grab_set()
+        self._parent = parent
+
+    def _safe_destroy(self) -> None:
+        try:
+            if self.winfo_exists():
+                self.destroy()
+        except Exception:
+            pass
 
     def _build_ui(self) -> None:
         f = ctk.CTkFrame(self, fg_color="transparent")
@@ -90,12 +98,12 @@ class TaskDialog(ctk.CTkToplevel):
         btn_row.pack(fill="x")
         ctk.CTkButton(
             btn_row,
-            text="Cancel",
+            text="← Cancel",
             fg_color=BG_INPUT,
             hover_color=TEXT_SECONDARY,
-            command=self.destroy,
+            command=lambda: (self.withdraw(), self.after(200, self._safe_destroy)),
         ).pack(side="right", padx=8)
-        ctk.CTkButton(btn_row, text="Save", command=self._save).pack(side="right")
+        ctk.CTkButton(btn_row, text="Save →", command=self._save).pack(side="right")
 
     def set_task(self, task: Task) -> None:
         """Pre-fill form for editing."""
@@ -158,4 +166,5 @@ class TaskDialog(ctk.CTkToplevel):
                     duration_minutes=duration,
                     priority=prio,
                 )
-        self.destroy()
+        self.withdraw()
+        self.after(200, self._safe_destroy)
