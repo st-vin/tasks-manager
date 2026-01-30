@@ -79,6 +79,7 @@ class MainWindow(ctk.CTk):
         tasks = TasksView(
             content_frame,
             on_new_task=self._open_new_task,
+            on_back=lambda: self._show_screen("home"),
             get_presenter=lambda: self._task_presenter,
         )
         tasks.grid(row=0, column=0, sticky="nsew")
@@ -192,7 +193,8 @@ class MainWindow(ctk.CTk):
             self._refresh_home()
 
         w = NewGoalWizard(self, on_save=save, on_back=lambda: None)
-        w.focus()
+        self.after(50, w.lift)
+        self.after(50, w.focus_force)
 
     def _open_new_task(self) -> None:
         def on_type_selected(task_type: TaskType) -> None:
@@ -212,10 +214,11 @@ class MainWindow(ctk.CTk):
                     self._screens["calendar"].refresh_events()
 
             dlg = TaskDialog(self, dialog_title="New Task", on_save=save_new)
-            dlg.focus()
+            self.after(50, dlg.focus_force)
 
         w = NewTaskWizard(self, on_select_type=on_type_selected, on_back=lambda: None)
-        w.focus()
+        self.after(50, w.lift)
+        self.after(50, w.focus_force)
 
     def _edit_task_from_calendar(self, task: Task) -> None:
         def save_edit(**kwargs) -> None:
