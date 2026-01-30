@@ -43,20 +43,30 @@ class NewTaskWizard(ctk.CTkToplevel):
         self._build_ui()
         self.transient(parent)
         self.grab_set()
+        self._parent = parent
+
+    def _safe_destroy(self) -> None:
+        try:
+            if self.winfo_exists():
+                self.destroy()
+        except Exception:
+            pass
 
     def _build_ui(self) -> None:
         nav = ctk.CTkFrame(self, fg_color="transparent", height=48)
         nav.pack(fill="x", padx=16, pady=(12, 0))
         nav.pack_propagate(False)
-        ctk.CTkButton(
+        self._btn_back = ctk.CTkButton(
             nav,
-            text="←",
-            width=40,
+            text="← Back",
+            width=80,
             height=40,
             fg_color="transparent",
             hover_color=BG_CARD,
+            font=FONT_SMALL,
             command=self._go_back,
-        ).pack(side="left", padx=(0, 8))
+        )
+        self._btn_back.pack(side="left", padx=(0, 8))
         ctk.CTkLabel(nav, text="New Task", font=FONT_HEADING, text_color=TEXT_PRIMARY).pack(side="left")
 
         prog = ctk.CTkFrame(self, fg_color="transparent", height=6)
@@ -119,15 +129,16 @@ class NewTaskWizard(ctk.CTkToplevel):
             frame.configure(cursor="hand2")
             row.configure(cursor="hand2")
 
-        ctk.CTkButton(
+        self._btn_next = ctk.CTkButton(
             content,
-            text="Next",
+            text="Next →",
             font=FONT_BODY,
             fg_color=ACCENT_MINT_LIGHT,
             text_color="#121D2D",
             corner_radius=CORNER_RADIUS,
             command=self._next,
-        ).pack(fill="x", pady=(20, 0))
+        )
+        self._btn_next.pack(fill="x", pady=(20, 0))
 
     def _select(self, typ: TaskType) -> None:
         self._selected = typ
@@ -152,9 +163,13 @@ class NewTaskWizard(ctk.CTkToplevel):
     def _go_back(self) -> None:
         if self._on_back:
             self._on_back()
-        self.destroy()
+        self.withdraw()
+        self.after(200, self._safe_destroy)
 
     def _next(self) -> None:
-        if self._on_select_type:
-            self._on_select_type(self._selected)
-        self.destroy()
+        sel = self._selected
+        cb = self._on_select_type
+        if cb:
+            cb(sel)
+        self.withdraw()
+        self.after(200, self._safe_destroy)
